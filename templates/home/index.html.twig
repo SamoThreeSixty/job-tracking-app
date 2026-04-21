@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Job Tracker Starter{% endblock %}
+
+{% block body %}
+    <main class="page-shell">
+        <section class="hero-card">
+            <p class="eyebrow">Symfony starter</p>
+
+            <div class="hero-grid">
+                <div class="hero-copy">
+                    <h1>Job Tracker is ready for its first feature.</h1>
+                    <p>
+                        This starter app is running on Symfony {{ symfonyVersion }}, uses Twig for server-rendered pages,
+                        stores data in SQLite, and ships with a Webpack Encore frontend pipeline so <code>npm run dev</code>
+                        works out of the box.
+                    </p>
+
+                    <div class="actions">
+                        <a class="button button-primary" href="https://symfony.com/doc/current/index.html">Symfony docs</a>
+                        <a class="button button-secondary" href="https://www.doctrine-project.org/projects/doctrine-orm.html">Doctrine ORM</a>
+                    </div>
+                </div>
+
+                <div class="info-panel">
+                    <article class="stat-card">
+                        <span>Database</span>
+                        <strong>SQLite</strong>
+                        <span>{{ databasePath }}</span>
+                    </article>
+
+                    <ol class="checklist">
+                        <li>Run the app with Docker on port <code>8000</code>.</li>
+                        <li>Boot the asset watcher with <code>npm run dev -- --watch</code>.</li>
+                        <li>Start building out entities, migrations, and job-tracking flows.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <p class="footer-note">
+                The next natural step is adding a <code>JobApplication</code> entity and the first CRUD flow.
+            </p>
+        </section>
+    </main>
+{% endblock %}

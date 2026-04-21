@@ -1,0 +1,15 @@
+[Unit]
+Description=Job Tracker Symfony app container
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/job-tracker
+ExecStart=/usr/bin/env docker compose up --build --remove-orphans app
+ExecStop=/usr/bin/env docker compose stop app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

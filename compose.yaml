@@ -1,0 +1,38 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    environment:
+      APP_ENV: dev
+      APP_DEBUG: 1
+      APP_TIMEZONE: Europe/London
+      DATABASE_URL: sqlite:////app/var/data/app.db
+      COMPOSER_CACHE_DIR: /tmp/composer-cache
+      SERVER_NAME: :8000
+    ports:
+      - "8000:8000"
+    tty: true
+    volumes:
+      - .:/app
+      - composer_cache:/tmp/composer-cache
+      - caddy_data:/data
+      - caddy_config:/config
+      - sqlite_data:/app/var/data
+
+  node:
+    image: node:22-bookworm
+    working_dir: /app
+    command: sh -lc "npm install && npm run dev -- --watch"
+    environment:
+      CHOKIDAR_USEPOLLING: "1"
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+
+volumes:
+  caddy_config:
+  caddy_data:
+  composer_cache:
+  node_modules:
+  sqlite_data:

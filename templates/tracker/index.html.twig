@@ -1,0 +1,144 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Background Tracker{% endblock %}
+
+{% block body %}
+    <main class="tracker-shell">
+        <header class="tracker-header">
+            <div>
+                <p class="kicker">Daily background tracker</p>
+                <h1>Track work blocks as you go.</h1>
+                <p class="intro">
+                    Start a block with the ticket, job number, and description. When you stop it, the app saves the
+                    block with quarter-hour timing, and you can manually adjust both ends afterward.
+                </p>
+            </div>
+        </header>
+
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="flash flash-{{ label }}">{{ message }}</div>
+            {% endfor %}
+        {% endfor %}
+
+        <section class="panel stack-gap">
+            <div class="panel-heading">
+                <h2>Current block</h2>
+                {% if activeBlock %}
+                    <span class="status status-live">Running</span>
+                {% else %}
+                    <span class="status">Idle</span>
+                {% endif %}
+            </div>
+
+            {% if activeBlock %}
+                <div class="active-block">
+                    <div class="summary-grid">
+                        <div>
+                            <span class="label">Ticket</span>
+                            <strong>{{ activeBlock.ticket }}</strong>
+                        </div>
+                        <div>
+                            <span class="label">Job no</span>
+                            <strong>{{ activeBlock.jobNumber }}</strong>
+                        </div>
+                        <div class="summary-wide">
+                            <span class="label">Description</span>
+                            <strong>{{ activeBlock.description }}</strong>
+                        </div>
+                        <div>
+                            <span class="label">Rounded start</span>
+                            <strong>{{ activeBlock.startTime|date('d M Y H:i') }}</strong>
+                        </div>
+                    </div>
+
+                    <form method="post" action="{{ path('app_tracker_stop', {id: activeBlock.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('stop-block-' ~ activeBlock.id) }}">
+                        <button class="button button-stop" type="submit">Stop block</button>
+                    </form>
+                </div>
+            {% else %}
+                <form method="post" action="{{ path('app_tracker_start') }}" class="tracker-form">
+                    <input type="hidden" name="_token" value="{{ csrf_token('start-block') }}">
+
+                    <label>
+                        Ticket
+                        <input type="text" name="ticket" maxlength="64" required placeholder="INC-12345">
+                    </label>
+
+                    <label>
+                        Job no
+                        <input type="text" name="job_number" maxlength="64" required placeholder="JOB-001">
+                    </label>
+
+                    <label class="field-wide">
+                        Description
+                        <textarea name="description" rows="3" maxlength="255" required placeholder="What are you working on?"></textarea>
+                    </label>
+
+                    <button class="button button-start" type="submit">Start block</button>
+                </form>
+            {% endif %}
+        </section>
+
+        <section class="panel stack-gap">
+            <div class="panel-heading">
+                <h2>Saved blocks</h2>
+                <span class="hint">Manual changes are rounded to 15-minute increments.</span>
+            </div>
+
+            {% if recentBlocks is empty %}
+                <p class="empty-state">No time blocks yet. Start one above to begin tracking.</p>
+            {% else %}
+                <div class="block-list">
+                    {% for block in recentBlocks %}
+                        <article class="block-card">
+                            <div class="card-topline">
+                                <div>
+                                    <h3>{{ block.ticket }} <span>{{ block.jobNumber }}</span></h3>
+                                    <p>{{ block.description }}</p>
+                                </div>
+                                {% if block.endTime %}
+                                    <div class="duration-badge">{{ block.durationMinutes }} min</div>
+                                {% else %}
+                                    <div class="duration-badge duration-live">Running</div>
+                                {% endif %}
+                            </div>
+
+                            <form method="post" action="{{ path('app_tracker_update', {id: block.id}) }}" class="edit-form">
+                                <input type="hidden" name="_token" value="{{ csrf_token('update-block-' ~ block.id) }}">
+
+                                <label>
+                                    Ticket
+                                    <input type="text" name="ticket" maxlength="64" required value="{{ block.ticket }}">
+                                </label>
+
+                                <label>
+                                    Job no
+                                    <input type="text" name="job_number" maxlength="64" required value="{{ block.jobNumber }}">
+                                </label>
+
+                                <label class="field-wide">
+                                    Description
+                                    <input type="text" name="description" maxlength="255" required value="{{ block.description }}">
+                                </label>
+
+                                <label>
+                                    Start time
+                                    <input type="datetime-local" step="900" name="start_time" required value="{{ block.startTime|date('Y-m-d\\TH:i') }}">
+                                </label>
+
+                                <label>
+                                    End time
+                                    <input type="datetime-local" step="900" name="end_time" value="{{ block.endTime ? block.endTime|date('Y-m-d\\TH:i') : '' }}">
+                                </label>
+
+                                <button class="button button-secondary" type="submit">Save changes</button>
+                            </form>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </section>
+    </main>
+{% endblock %}
