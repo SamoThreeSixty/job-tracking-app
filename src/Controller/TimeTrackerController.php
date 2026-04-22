@@ -52,12 +52,19 @@ final class TimeTrackerController extends AbstractController
         }
 
         $now = new \DateTimeImmutable();
+        $startTime = $quarterHourRounder->floor($now);
+        $latestFinishedBlock = $timeBlockRepository->findLatestFinishedBlock();
+
+        if (null !== $latestFinishedBlock && null !== $latestFinishedBlock->getEndTime() && $latestFinishedBlock->getEndTime() > $startTime) {
+            $startTime = $latestFinishedBlock->getEndTime();
+        }
+
         $block = (new TimeBlock())
             ->setTicket($ticket)
             ->setJobNumber($jobNumber)
             ->setDescription($description)
             ->setCreatedAt($now)
-            ->setStartTime($quarterHourRounder->floor($now));
+            ->setStartTime($startTime);
 
         $entityManager->persist($block);
         $entityManager->flush();

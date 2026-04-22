@@ -26,6 +26,16 @@ class TimeBlockRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    public function findLatestFinishedBlock(): ?TimeBlock
+    {
+        return $this->createQueryBuilder('tb')
+            ->andWhere('tb.endTime IS NOT NULL')
+            ->orderBy('tb.endTime', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     /**
      * @return list<TimeBlock>
      */
