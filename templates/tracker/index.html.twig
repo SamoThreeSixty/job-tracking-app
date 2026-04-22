@@ -61,6 +61,35 @@
                 <form method="post" action="{{ path('app_tracker_start') }}" class="tracker-form">
                     <input type="hidden" name="_token" value="{{ csrf_token('start-block') }}">
 
+                    <div class="field-wide ticket-loader">
+                        <div class="ticket-picker-header">
+                            <label class="ticket-picker-label">
+                                Available tickets
+                                <select data-ticket-select>
+                                    <option value="">Choose a ticket</option>
+                                    {% for savedTicket in savedTickets %}
+                                        <option
+                                            value="{{ savedTicket.id }}"
+                                            data-ticket="{{ savedTicket.ticket }}"
+                                            data-job-number="{{ savedTicket.jobNumber }}"
+                                            data-description="{{ savedTicket.description }}"
+                                        >
+                                            {{ savedTicket.ticket }} | {{ savedTicket.jobNumber }}{% if savedTicket.description %} | {{ savedTicket.description }}{% endif %}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+
+                            <button class="button button-ghost ticket-modal-trigger" type="button" data-load-tickets>Open loader</button>
+                        </div>
+
+                        <span class="hint" data-ticket-status>
+                            {% if savedTickets is empty %}
+                                No saved tickets yet. Import a page source to build the list.
+                            {% endif %}
+                        </span>
+                    </div>
+
                     <label>
                         Ticket
                         <input type="text" name="ticket" maxlength="64" required placeholder="INC-12345">
@@ -173,4 +202,32 @@
             {% endif %}
         </section>
     </main>
+
+    <div class="modal-backdrop" hidden data-ticket-modal>
+        <div class="ticket-modal" role="dialog" aria-modal="true" aria-labelledby="ticket-loader-title">
+            <form method="post" action="{{ path('app_tracker_import_tickets') }}" class="ticket-modal-form">
+                <input type="hidden" name="_token" value="{{ csrf_token('import-tickets') }}">
+
+                <div class="ticket-modal-header">
+                    <div>
+                        <p class="label">Ticket Loader</p>
+                        <h3 id="ticket-loader-title">Paste page source</h3>
+                    </div>
+
+                    <button class="button button-ghost ticket-modal-close" type="button" data-close-ticket-modal>Close</button>
+                </div>
+
+                <p class="hint">Paste the full HTML source and the app will look inside the <code>#live</code> section for ticket rows.</p>
+
+                <label class="ticket-source-input" data-ticket-source-input>
+                    Page source
+                    <textarea rows="12" name="source_html" data-ticket-source placeholder="Paste the page source here" required></textarea>
+                </label>
+
+                <div class="ticket-modal-actions">
+                    <button class="button button-secondary" type="submit">Import tickets</button>
+                </div>
+            </form>
+        </div>
+    </div>
 {% endblock %}

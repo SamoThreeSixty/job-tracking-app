@@ -173,12 +173,14 @@ label,
 
 input,
 textarea,
+select,
 button {
     font: inherit;
 }
 
 input,
-textarea {
+textarea,
+select {
     width: 100%;
     padding: 0.85rem 0.95rem;
     border: 1px solid #cbd5df;
@@ -190,7 +192,8 @@ textarea {
 input[readonly],
 textarea[readonly],
 input:disabled,
-textarea:disabled {
+textarea:disabled,
+select:disabled {
     background: #f3f6f9;
     color: #495867;
     cursor: default;
@@ -252,6 +255,104 @@ textarea {
 .block-list {
     display: grid;
     gap: 1rem;
+}
+
+.ticket-loader {
+    padding: 1rem;
+    border: 1px dashed var(--line);
+    border-radius: 14px;
+    background: #f7fafc;
+}
+
+.ticket-picker-header {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.ticket-picker-label {
+    flex: 1 1 22rem;
+}
+
+.ticket-modal-trigger {
+    min-width: 8.5rem;
+}
+
+.ticket-source-input textarea {
+    min-height: 10rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.85rem;
+}
+
+[data-ticket-status][data-state='error'] {
+    color: var(--error-text);
+}
+
+.modal-open {
+    overflow: hidden;
+}
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(23, 33, 43, 0.45);
+    backdrop-filter: blur(4px);
+}
+
+.modal-backdrop[hidden] {
+    display: none;
+}
+
+.modal-backdrop:not([hidden]) {
+    display: flex;
+}
+
+.ticket-modal {
+    width: min(860px, 100%);
+    max-height: min(85vh, 820px);
+    overflow: auto;
+    padding: 1.25rem;
+    border: 1px solid rgba(217, 224, 231, 0.9);
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 24px 60px rgba(23, 33, 43, 0.2);
+}
+
+.ticket-modal-form {
+    display: grid;
+    gap: 1rem;
+}
+
+.ticket-modal-header {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.ticket-modal-header h3 {
+    margin: 0.2rem 0 0;
+    font-size: 1.2rem;
+}
+
+.ticket-modal-close {
+    min-width: 6rem;
+}
+
+.ticket-source-input {
+    margin-top: 0.85rem;
+}
+
+.ticket-modal-actions {
+    display: flex;
+    justify-content: flex-start;
 }
 
 .block-card {
@@ -514,5 +615,10 @@ textarea {
 
     .button {
         width: 100%;
+    }
+
+    .ticket-picker-header,
+    .ticket-modal-header {
+        align-items: stretch;
     }
 }

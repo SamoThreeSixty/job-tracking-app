@@ -8,6 +8,7 @@ createIcons({ icons });
 const copyButtons = document.querySelectorAll('[data-copy-field]');
 const editableBlocks = document.querySelectorAll('[data-editable-block]');
 const expandableBlocks = document.querySelectorAll('[data-block-card]');
+const ticketLoaderButton = document.querySelector('[data-load-tickets]');
 
 const formatDateTime = (value) => {
     if (!value) {
@@ -83,3 +84,78 @@ expandableBlocks.forEach((blockCard) => {
         toggle.setAttribute('aria-expanded', isExpanded ? 'false' : 'true');
     });
 });
+
+if (ticketLoaderButton) {
+    const ticketStatus = document.querySelector('[data-ticket-status]');
+    const ticketSelect = document.querySelector('[data-ticket-select]');
+    const ticketModal = document.querySelector('[data-ticket-modal]');
+    const closeTicketModalButton = document.querySelector('[data-close-ticket-modal]');
+    const ticketSourceInput = document.querySelector('[data-ticket-source]');
+    const ticketInput = document.querySelector('input[name="ticket"]');
+    const jobInput = document.querySelector('input[name="job_number"]');
+    const descriptionInput = document.querySelector('textarea[name="description"]');
+
+    const setStatus = (message, isError = false) => {
+        if (!ticketStatus) {
+            return;
+        }
+
+        ticketStatus.textContent = message;
+        ticketStatus.dataset.state = isError ? 'error' : 'default';
+    };
+
+    const closeTicketModal = () => {
+        if (!ticketModal) {
+            return;
+        }
+
+        ticketModal.hidden = true;
+        document.body.classList.remove('modal-open');
+    };
+
+    ticketLoaderButton.addEventListener('click', () => {
+        if (ticketModal) {
+            ticketModal.hidden = false;
+            document.body.classList.add('modal-open');
+        }
+
+        ticketSourceInput?.focus();
+        setStatus('Paste the page source and import it to save or update tickets.');
+    });
+
+    closeTicketModalButton?.addEventListener('click', closeTicketModal);
+
+    ticketModal?.addEventListener('click', (event) => {
+        if (event.target === ticketModal) {
+            closeTicketModal();
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && ticketModal && !ticketModal.hidden) {
+            closeTicketModal();
+        }
+    });
+
+    ticketSelect?.addEventListener('change', () => {
+        const option = ticketSelect.selectedOptions[0];
+
+        if (!option || !option.dataset.ticket) {
+            return;
+        }
+
+        if (ticketInput) {
+            ticketInput.value = option.dataset.ticket;
+        }
+
+        if (jobInput) {
+            jobInput.value = option.dataset.jobNumber || '';
+        }
+
+        if (descriptionInput && !descriptionInput.value.trim()) {
+            descriptionInput.value = option.dataset.description || '';
+        }
+
+        setStatus('Ticket details copied into the form.');
+    });
+}
