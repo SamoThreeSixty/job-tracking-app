@@ -4,6 +4,7 @@
         <input
             type="{{ input_type|default('text') }}"
             name="{{ name }}"
+            {% if readonly|default(false) %}readonly data-readonly-field="readonly"{% endif %}
             {% if maxlength is defined and maxlength is not null %}maxlength="{{ maxlength }}"{% endif %}
             {% if step is defined and step is not null %}step="{{ step }}"{% endif %}
             {% if required|default(false) %}required{% endif %}

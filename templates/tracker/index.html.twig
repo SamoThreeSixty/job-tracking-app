@@ -107,7 +107,7 @@
                                 {% endif %}
                             </div>
 
-                            <form method="post" action="{{ path('app_tracker_update', {id: block.id}) }}" class="edit-form">
+                            <form method="post" action="{{ path('app_tracker_update', {id: block.id}) }}" class="edit-form" data-editable-block>
                                 <input type="hidden" name="_token" value="{{ csrf_token('update-block-' ~ block.id) }}">
 
                                 {% include 'components/copy_input.html.twig' with {
@@ -116,7 +116,8 @@
                                     maxlength: 64,
                                     required: true,
                                     value: block.ticket,
-                                    copy_label: 'Copy ticket'
+                                    copy_label: 'Copy ticket',
+                                    readonly: true
                                 } only %}
 
                                 {% include 'components/copy_input.html.twig' with {
@@ -125,7 +126,8 @@
                                     maxlength: 64,
                                     required: true,
                                     value: block.jobNumber,
-                                    copy_label: 'Copy job number'
+                                    copy_label: 'Copy job number',
+                                    readonly: true
                                 } only %}
 
                                 {% include 'components/copy_input.html.twig' with {
@@ -135,21 +137,23 @@
                                     required: true,
                                     value: block.description,
                                     field_class: 'field-wide',
-                                    copy_label: 'Copy description'
+                                    copy_label: 'Copy description',
+                                    readonly: true
                                 } only %}
 
                                 <label>
                                     Start time
-                                    <input type="datetime-local" step="900" name="start_time" required value="{{ block.startTime|date('Y-m-d\\TH:i') }}">
+                                    <input type="datetime-local" step="900" name="start_time" required value="{{ block.startTime|date('Y-m-d\\TH:i') }}" disabled data-readonly-field="disabled">
                                 </label>
 
                                 <label>
                                     End time
-                                    <input type="datetime-local" step="900" name="end_time" value="{{ block.endTime ? block.endTime|date('Y-m-d\\TH:i') : '' }}">
+                                    <input type="datetime-local" step="900" name="end_time" value="{{ block.endTime ? block.endTime|date('Y-m-d\\TH:i') : '' }}" disabled data-readonly-field="disabled">
                                 </label>
 
                                 <div class="form-actions field-wide">
-                                    <button class="button button-secondary" type="submit">Save changes</button>
+                                    <button class="button button-ghost" type="button" data-edit-toggle>Edit block</button>
+                                    <button class="button button-secondary button-save" type="submit">Save changes</button>
                                 </div>
                             </form>
                         </article>

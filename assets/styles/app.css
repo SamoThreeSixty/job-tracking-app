@@ -187,6 +187,15 @@ textarea {
     color: var(--text);
 }
 
+input[readonly],
+textarea[readonly],
+input:disabled,
+textarea:disabled {
+    background: #f3f6f9;
+    color: #495867;
+    cursor: default;
+}
+
 textarea {
     resize: vertical;
     min-height: 6rem;
@@ -228,6 +237,15 @@ textarea {
 
 .button-secondary:hover {
     background: #34404b;
+}
+
+.button-ghost {
+    background: #e7edf3;
+    color: var(--text);
+}
+
+.button-ghost:hover {
+    background: #dbe5ee;
 }
 
 .active-block,
@@ -316,6 +334,18 @@ textarea {
     align-items: center;
     gap: 0.75rem;
     justify-content: flex-start;
+}
+
+.button-save {
+    display: none;
+}
+
+[data-editable-block][data-editing='true'] .button-save {
+    display: inline-flex;
+}
+
+[data-editable-block][data-editing='true'] .button-ghost {
+    display: none;
 }
 
 .copy-button:hover {

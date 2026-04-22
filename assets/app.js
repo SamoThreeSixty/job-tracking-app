@@ -6,6 +6,7 @@ document.documentElement.classList.add('js-ready');
 createIcons({ icons });
 
 const copyButtons = document.querySelectorAll('[data-copy-field]');
+const editableBlocks = document.querySelectorAll('[data-editable-block]');
 
 const formatDateTime = (value) => {
     if (!value) {
@@ -38,5 +39,32 @@ copyButtons.forEach((button) => {
         } catch (error) {
             console.error('Unable to copy field value.', error);
         }
+    });
+});
+
+editableBlocks.forEach((form) => {
+    const editButton = form.querySelector('[data-edit-toggle]');
+
+    if (!editButton) {
+        return;
+    }
+
+    editButton.addEventListener('click', () => {
+        form.dataset.editing = 'true';
+
+        const fields = form.querySelectorAll('[data-readonly-field]');
+        fields.forEach((field) => {
+            const mode = field.dataset.readonlyField;
+
+            if (mode === 'disabled') {
+                field.disabled = false;
+            } else {
+                field.readOnly = false;
+            }
+        });
+
+        const firstField = form.querySelector('input[name="ticket"]');
+        firstField?.focus();
+        firstField?.select();
     });
 });
