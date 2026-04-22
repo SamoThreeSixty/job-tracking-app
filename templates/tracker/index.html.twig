@@ -83,15 +83,17 @@
 
         <section class="panel stack-gap">
             <div class="panel-heading">
-                <h2>Saved blocks</h2>
+                <h2>Today's blocks</h2>
                 <span class="hint">Manual changes are rounded to 15-minute increments.</span>
             </div>
 
-            {% if recentBlocks is empty %}
-                <p class="empty-state">No time blocks yet. Start one above to begin tracking.</p>
+            <p class="day-label">{{ todayLabel }}</p>
+
+            {% if todayBlocks is empty %}
+                <p class="empty-state">No time blocks logged for today yet. Start one above to begin tracking.</p>
             {% else %}
                 <div class="block-list">
-                    {% for block in recentBlocks %}
+                    {% for block in todayBlocks %}
                         <article class="block-card">
                             <div class="card-topline">
                                 <div>

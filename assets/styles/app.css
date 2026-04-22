@@ -99,6 +99,13 @@ code {
     font-size: 0.92rem;
 }
 
+.day-label {
+    margin: -0.35rem 0 0;
+    color: var(--muted);
+    font-size: 0.92rem;
+    font-weight: 600;
+}
+
 .status,
 .duration-badge {
     display: inline-flex;

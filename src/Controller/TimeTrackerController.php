@@ -17,9 +17,12 @@ final class TimeTrackerController extends AbstractController
     #[Route('/', name: 'app_tracker_dashboard', methods: ['GET'])]
     public function index(TimeBlockRepository $timeBlockRepository): Response
     {
+        $today = new \DateTimeImmutable('today');
+
         return $this->render('tracker/index.html.twig', [
             'activeBlock' => $timeBlockRepository->findActiveBlock(),
-            'recentBlocks' => $timeBlockRepository->findRecentBlocks(),
+            'todayBlocks' => $timeBlockRepository->findBlocksForDay($today),
+            'todayLabel' => $today->format('D j M Y'),
         ]);
     }
 
