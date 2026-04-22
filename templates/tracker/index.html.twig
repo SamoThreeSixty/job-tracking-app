@@ -110,20 +110,33 @@
                             <form method="post" action="{{ path('app_tracker_update', {id: block.id}) }}" class="edit-form">
                                 <input type="hidden" name="_token" value="{{ csrf_token('update-block-' ~ block.id) }}">
 
-                                <label>
-                                    Ticket
-                                    <input type="text" name="ticket" maxlength="64" required value="{{ block.ticket }}">
-                                </label>
+                                {% include 'components/copy_input.html.twig' with {
+                                    label: 'Ticket',
+                                    name: 'ticket',
+                                    maxlength: 64,
+                                    required: true,
+                                    value: block.ticket,
+                                    copy_label: 'Copy ticket'
+                                } only %}
 
-                                <label>
-                                    Job no
-                                    <input type="text" name="job_number" maxlength="64" required value="{{ block.jobNumber }}">
-                                </label>
+                                {% include 'components/copy_input.html.twig' with {
+                                    label: 'Job no',
+                                    name: 'job_number',
+                                    maxlength: 64,
+                                    required: true,
+                                    value: block.jobNumber,
+                                    copy_label: 'Copy job number'
+                                } only %}
 
-                                <label class="field-wide">
-                                    Description
-                                    <input type="text" name="description" maxlength="255" required value="{{ block.description }}">
-                                </label>
+                                {% include 'components/copy_input.html.twig' with {
+                                    label: 'Description',
+                                    name: 'description',
+                                    maxlength: 255,
+                                    required: true,
+                                    value: block.description,
+                                    field_class: 'field-wide',
+                                    copy_label: 'Copy description'
+                                } only %}
 
                                 <label>
                                     Start time
@@ -135,7 +148,9 @@
                                     <input type="datetime-local" step="900" name="end_time" value="{{ block.endTime ? block.endTime|date('Y-m-d\\TH:i') : '' }}">
                                 </label>
 
-                                <button class="button button-secondary" type="submit">Save changes</button>
+                                <div class="form-actions field-wide">
+                                    <button class="button button-secondary" type="submit">Save changes</button>
+                                </div>
                             </form>
                         </article>
                     {% endfor %}

@@ -272,6 +272,102 @@ textarea {
     color: var(--muted);
 }
 
+.copy-button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-width: auto;
+    padding: 0.55rem 0.85rem;
+    border: 1px solid #cbd5df;
+    border-radius: 999px;
+    background: #fff;
+    color: var(--text);
+    transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.copy-field {
+    position: relative;
+}
+
+.copy-button-inline {
+    position: absolute;
+    top: 50%;
+    right: 0.55rem;
+    z-index: 1;
+    min-width: 2.4rem;
+    width: 2.4rem;
+    height: 2.4rem;
+    margin-top: -1.2rem;
+    padding: 0;
+    justify-content: center;
+    border-color: transparent;
+    background: transparent;
+    color: #7b8794;
+    box-shadow: none;
+}
+
+.copy-field input {
+    padding-right: 3.35rem;
+}
+
+.form-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    justify-content: flex-start;
+}
+
+.copy-button:hover {
+    border-color: rgba(23, 105, 170, 0.16);
+    background: #f4f8fb;
+    color: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.copy-button:focus-visible {
+    outline: 2px solid rgba(23, 105, 170, 0.25);
+    outline-offset: 2px;
+}
+
+.copy-button-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    height: 1rem;
+    transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.copy-button-icon svg {
+    width: 1rem;
+    height: 1rem;
+    stroke-width: 2.2;
+}
+
+.copy-button-icon-check {
+    position: absolute;
+    left: 0.85rem;
+    opacity: 0;
+    transform: scale(0.65);
+}
+
+.copy-button[data-copied='true'] {
+    border-color: #8fd0a3;
+    background: var(--success-bg);
+    color: var(--success-text);
+}
+
+.copy-button[data-copied='true'] .copy-button-icon-copy {
+    opacity: 0;
+    transform: scale(0.65);
+}
+
+.copy-button[data-copied='true'] .copy-button-icon-check {
+    opacity: 1;
+    transform: scale(1);
+}
+
 .js-ready .panel {
     animation: fade-up 220ms ease-out both;
 }
@@ -307,6 +403,14 @@ textarea {
 
     .card-topline {
         display: grid;
+    }
+
+    .form-actions {
+        display: grid;
+    }
+
+    .copy-field {
+        display: block;
     }
 
     .button {

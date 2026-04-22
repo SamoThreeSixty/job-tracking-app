@@ -1,0 +1,22 @@
+<label{% if field_class is defined and field_class %} class="{{ field_class }}"{% endif %}>
+    {{ label }}
+    <div class="copy-field">
+        <input
+            type="{{ input_type|default('text') }}"
+            name="{{ name }}"
+            {% if maxlength is defined and maxlength is not null %}maxlength="{{ maxlength }}"{% endif %}
+            {% if step is defined and step is not null %}step="{{ step }}"{% endif %}
+            {% if required|default(false) %}required{% endif %}
+            {% if placeholder is defined and placeholder is not null %}placeholder="{{ placeholder }}"{% endif %}
+            value="{{ value|default('') }}"
+        >
+        <button class="copy-button copy-button-inline" type="button" data-copy-field aria-label="{{ copy_label|default('Copy ' ~ label|lower) }}">
+            <span class="copy-button-icon copy-button-icon-copy" aria-hidden="true">
+                <i data-lucide="copy"></i>
+            </span>
+            <span class="copy-button-icon copy-button-icon-check" aria-hidden="true">
+                <i data-lucide="check"></i>
+            </span>
+        </button>
+    </div>
+</label>
