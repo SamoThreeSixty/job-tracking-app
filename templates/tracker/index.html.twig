@@ -195,6 +195,20 @@
                                         <button class="button button-secondary button-save" type="submit">Save changes</button>
                                     </div>
                                 </form>
+
+                                <div class="block-actions">
+                                    {% if not activeBlock %}
+                                        <form method="post" action="{{ path('app_tracker_continue', {id: block.id}) }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('continue-block-' ~ block.id) }}">
+                                            <button class="button button-secondary button-small" type="submit">Continue</button>
+                                        </form>
+                                    {% endif %}
+
+                                    <form method="post" action="{{ path('app_tracker_delete', {id: block.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete-block-' ~ block.id) }}">
+                                        <button class="button button-danger-soft button-small" type="submit" onclick="return confirm('Delete this block?');">Delete</button>
+                                    </form>
+                                </div>
                             </div>
                         </article>
                     {% endfor %}

@@ -111,12 +111,7 @@ final class TimeTrackerController extends AbstractController
         }
 
         $now = new \DateTimeImmutable();
-        $startTime = $quarterHourRounder->floor($now);
-        $latestFinishedBlock = $timeBlockRepository->findLatestFinishedBlock();
-
-        if (null !== $latestFinishedBlock && null !== $latestFinishedBlock->getEndTime() && $latestFinishedBlock->getEndTime() > $startTime) {
-            $startTime = $latestFinishedBlock->getEndTime();
-        }
+        $startTime = $this->resolveNextStartTime($timeBlockRepository, $quarterHourRounder, $now);
 
         $block = (new TimeBlock())
             ->setTicket($ticket)
@@ -129,6 +124,39 @@ final class TimeTrackerController extends AbstractController
         $entityManager->flush();
 
         $this->addFlash('success', 'Tracking started.');
+
+        return $this->redirectToRoute('app_tracker_dashboard');
+    }
+
+    #[Route('/blocks/{id}/continue', name: 'app_tracker_continue', methods: ['POST'])]
+    public function continueBlock(
+        Request $request,
+        TimeBlock $timeBlock,
+        TimeBlockRepository $timeBlockRepository,
+        EntityManagerInterface $entityManager,
+        QuarterHourRounder $quarterHourRounder,
+    ): RedirectResponse
+    {
+        $this->validateCsrf(sprintf('continue-block-%d', $timeBlock->getId()), (string) $request->request->get('_token'));
+
+        if (null !== $timeBlockRepository->findActiveBlock()) {
+            $this->addFlash('error', 'Stop the current block before continuing another one.');
+
+            return $this->redirectToRoute('app_tracker_dashboard');
+        }
+
+        $now = new \DateTimeImmutable();
+        $block = (new TimeBlock())
+            ->setTicket($timeBlock->getTicket())
+            ->setJobNumber($timeBlock->getJobNumber())
+            ->setDescription($timeBlock->getDescription())
+            ->setCreatedAt($now)
+            ->setStartTime($this->resolveNextStartTime($timeBlockRepository, $quarterHourRounder, $now));
+
+        $entityManager->persist($block);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'A new block was started from the same ticket details.');
 
         return $this->redirectToRoute('app_tracker_dashboard');
     }
@@ -211,6 +239,38 @@ final class TimeTrackerController extends AbstractController
         $this->addFlash('success', 'Block updated.');
 
         return $this->redirectToRoute('app_tracker_dashboard');
+    }
+
+    #[Route('/blocks/{id}/delete', name: 'app_tracker_delete', methods: ['POST'])]
+    public function delete(
+        Request $request,
+        TimeBlock $timeBlock,
+        EntityManagerInterface $entityManager,
+    ): RedirectResponse
+    {
+        $this->validateCsrf(sprintf('delete-block-%d', $timeBlock->getId()), (string) $request->request->get('_token'));
+
+        $entityManager->remove($timeBlock);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Block deleted.');
+
+        return $this->redirectToRoute('app_tracker_dashboard');
+    }
+
+    private function resolveNextStartTime(
+        TimeBlockRepository $timeBlockRepository,
+        QuarterHourRounder $quarterHourRounder,
+        \DateTimeImmutable $now,
+    ): \DateTimeImmutable {
+        $startTime = $quarterHourRounder->floor($now);
+        $latestFinishedBlock = $timeBlockRepository->findLatestFinishedBlock();
+
+        if (null !== $latestFinishedBlock && null !== $latestFinishedBlock->getEndTime() && $latestFinishedBlock->getEndTime() > $startTime) {
+            return $latestFinishedBlock->getEndTime();
+        }
+
+        return $startTime;
     }
 
     private function validateCsrf(string $id, string $token): void
