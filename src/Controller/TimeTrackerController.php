@@ -2,7 +2,10 @@
 
 namespace App\Controller;
 
+use App\Contracts\TicketSourceParserInterface;
+use App\Entity\SavedTicket;
 use App\Entity\TimeBlock;
+use App\Repository\SavedTicketRepository;
 use App\Repository\TimeBlockRepository;
 use App\Service\QuarterHourRounder;
 use Doctrine\ORM\EntityManagerInterface;
@@ -15,25 +18,81 @@ use Symfony\Component\Routing\Attribute\Route;
 final class TimeTrackerController extends AbstractController
 {
     #[Route('/', name: 'app_tracker_dashboard', methods: ['GET'])]
-    public function index(TimeBlockRepository $timeBlockRepository): Response
+    public function index(TimeBlockRepository $timeBlockRepository, SavedTicketRepository $savedTicketRepository): Response
     {
         $today = new \DateTimeImmutable('today');
 
         return $this->render('tracker/index.html.twig', [
             'activeBlock' => $timeBlockRepository->findActiveBlock(),
+            'savedTickets' => $savedTicketRepository->findAllForPicker(),
             'todayBlocks' => $timeBlockRepository->findBlocksForDay($today),
             'todayLabel' => $today->format('D j M Y'),
         ]);
     }
 
+    #[Route('/tickets/import', name: 'app_tracker_import_tickets', methods: ['POST'])]
+    public function importTickets(
+        Request                     $request,
+        SavedTicketRepository       $savedTicketRepository,
+        TicketSourceParserInterface $ticketSourceParser,
+        EntityManagerInterface      $entityManager,
+    ): RedirectResponse
+    {
+        $this->validateCsrf('import-tickets', (string)$request->request->get('_token'));
+
+        $sourceHtml = (string)$request->request->get('source_html');
+        $parsedTickets = $ticketSourceParser->parse($sourceHtml);
+
+        if ([] === $parsedTickets) {
+            $this->addFlash('error', 'No live tickets were found in the pasted page source.');
+
+            return $this->redirectToRoute('app_tracker_dashboard');
+        }
+
+        $now = new \DateTimeImmutable();
+        $createdCount = 0;
+        $updatedCount = 0;
+
+        foreach ($parsedTickets as $parsedTicket) {
+            $savedTicket = $savedTicketRepository->findOneByTicket($parsedTicket->getTicket());
+
+            if (null === $savedTicket) {
+                $savedTicket = (new SavedTicket())
+                    ->setTicket($parsedTicket->getTicket())
+                    ->setCreatedAt($now);
+                $entityManager->persist($savedTicket);
+                ++$createdCount;
+            } else {
+                ++$updatedCount;
+            }
+
+            $savedTicket
+                ->setJobNumber($parsedTicket->getJobNumber())
+                ->setDescription($parsedTicket->getDescription())
+                ->setUpdatedAt($now);
+        }
+
+        $entityManager->flush();
+
+        $this->addFlash('success', sprintf(
+            'Imported %d tickets. Created %d, updated %d.',
+            count($parsedTickets),
+            $createdCount,
+            $updatedCount
+        ));
+
+        return $this->redirectToRoute('app_tracker_dashboard');
+    }
+
     #[Route('/blocks/start', name: 'app_tracker_start', methods: ['POST'])]
     public function start(
-        Request $request,
-        TimeBlockRepository $timeBlockRepository,
+        Request                $request,
+        TimeBlockRepository    $timeBlockRepository,
         EntityManagerInterface $entityManager,
-        QuarterHourRounder $quarterHourRounder,
-    ): RedirectResponse {
-        $this->validateCsrf('start-block', (string) $request->request->get('_token'));
+        QuarterHourRounder     $quarterHourRounder,
+    ): RedirectResponse
+    {
+        $this->validateCsrf('start-block', (string)$request->request->get('_token'));
 
         if (null !== $timeBlockRepository->findActiveBlock()) {
             $this->addFlash('error', 'Stop the current block before starting a new one.');
@@ -41,9 +100,9 @@ final class TimeTrackerController extends AbstractController
             return $this->redirectToRoute('app_tracker_dashboard');
         }
 
-        $ticket = trim((string) $request->request->get('ticket'));
-        $jobNumber = trim((string) $request->request->get('job_number'));
-        $description = trim((string) $request->request->get('description'));
+        $ticket = trim((string)$request->request->get('ticket'));
+        $jobNumber = trim((string)$request->request->get('job_number'));
+        $description = trim((string)$request->request->get('description'));
 
         if ('' === $ticket || '' === $jobNumber || '' === $description) {
             $this->addFlash('error', 'Ticket, job number, and description are all required.');
@@ -76,12 +135,13 @@ final class TimeTrackerController extends AbstractController
 
     #[Route('/blocks/{id}/stop', name: 'app_tracker_stop', methods: ['POST'])]
     public function stop(
-        Request $request,
-        TimeBlock $timeBlock,
+        Request                $request,
+        TimeBlock              $timeBlock,
         EntityManagerInterface $entityManager,
-        QuarterHourRounder $quarterHourRounder,
-    ): RedirectResponse {
-        $this->validateCsrf(sprintf('stop-block-%d', $timeBlock->getId()), (string) $request->request->get('_token'));
+        QuarterHourRounder     $quarterHourRounder,
+    ): RedirectResponse
+    {
+        $this->validateCsrf(sprintf('stop-block-%d', $timeBlock->getId()), (string)$request->request->get('_token'));
 
         if (!$timeBlock->isRunning()) {
             $this->addFlash('error', 'That block has already been stopped.');
@@ -104,18 +164,19 @@ final class TimeTrackerController extends AbstractController
 
     #[Route('/blocks/{id}/update', name: 'app_tracker_update', methods: ['POST'])]
     public function update(
-        Request $request,
-        TimeBlock $timeBlock,
+        Request                $request,
+        TimeBlock              $timeBlock,
         EntityManagerInterface $entityManager,
-        QuarterHourRounder $quarterHourRounder,
-    ): RedirectResponse {
-        $this->validateCsrf(sprintf('update-block-%d', $timeBlock->getId()), (string) $request->request->get('_token'));
+        QuarterHourRounder     $quarterHourRounder,
+    ): RedirectResponse
+    {
+        $this->validateCsrf(sprintf('update-block-%d', $timeBlock->getId()), (string)$request->request->get('_token'));
 
-        $ticket = trim((string) $request->request->get('ticket'));
-        $jobNumber = trim((string) $request->request->get('job_number'));
-        $description = trim((string) $request->request->get('description'));
-        $startInput = (string) $request->request->get('start_time');
-        $endInput = (string) $request->request->get('end_time');
+        $ticket = trim((string)$request->request->get('ticket'));
+        $jobNumber = trim((string)$request->request->get('job_number'));
+        $description = trim((string)$request->request->get('description'));
+        $startInput = (string)$request->request->get('start_time');
+        $endInput = (string)$request->request->get('end_time');
 
         if ('' === $ticket || '' === $jobNumber || '' === $description || '' === $startInput) {
             $this->addFlash('error', 'Ticket, job number, description, and start time are required.');
