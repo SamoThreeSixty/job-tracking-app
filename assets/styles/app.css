@@ -47,6 +47,41 @@ code {
     margin-bottom: 1rem;
 }
 
+.tracker-nav {
+    display: inline-flex;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+    padding: 0.35rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.78);
+    box-shadow: var(--shadow);
+}
+
+.tracker-nav-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 6rem;
+    padding: 0.65rem 1rem;
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background-color 180ms ease, color 180ms ease;
+}
+
+.tracker-nav-link:hover {
+    background: #eef4f8;
+    color: var(--text);
+}
+
+.tracker-nav-link.is-active {
+    background: var(--primary);
+    color: #fff;
+}
+
 .kicker {
     margin: 0 0 0.5rem;
     color: var(--primary);
@@ -519,6 +554,64 @@ textarea {
     padding: 0.7rem 1rem;
 }
 
+.history-groups {
+    display: grid;
+    gap: 1rem;
+}
+
+.history-day-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.history-day-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: #f7fafc;
+    color: var(--text);
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.history-day-link:hover {
+    border-color: rgba(23, 105, 170, 0.24);
+    background: #eef4f8;
+    transform: translateY(-1px);
+}
+
+.history-day-link.is-active {
+    border-color: rgba(23, 105, 170, 0.16);
+    background: #e7f3ff;
+    color: var(--primary-dark);
+}
+
+.history-selected {
+    padding-top: 0.5rem;
+}
+
+.history-group {
+    padding-top: 0.25rem;
+}
+
+.history-group + .history-group {
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+}
+
+.history-group-header h3 {
+    margin: 0;
+    color: var(--muted);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
 .button-save {
     display: none;
 }
@@ -611,6 +704,16 @@ textarea {
     }
 
     .panel-heading {
+        display: grid;
+    }
+
+    .tracker-nav {
+        display: grid;
+        width: 100%;
+        border-radius: 18px;
+    }
+
+    .history-day-links {
         display: grid;
     }
 

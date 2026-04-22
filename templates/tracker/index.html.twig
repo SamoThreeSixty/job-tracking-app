@@ -15,206 +15,158 @@
             </div>
         </header>
 
+        <nav class="tracker-nav" aria-label="Tracker sections">
+            <a class="tracker-nav-link{% if activeTab == 'today' %} is-active{% endif %}" href="{{ path('app_tracker_dashboard') }}">Today</a>
+            <a class="tracker-nav-link{% if activeTab == 'history' %} is-active{% endif %}" href="{{ path('app_tracker_history') }}">History</a>
+        </nav>
+
         {% for label, messages in app.flashes %}
             {% for message in messages %}
                 <div class="flash flash-{{ label }}">{{ message }}</div>
             {% endfor %}
         {% endfor %}
 
-        <section class="panel stack-gap">
-            <div class="panel-heading">
-                <h2>Current block</h2>
+        {% if activeTab == 'today' %}
+            <section class="panel stack-gap">
+                <div class="panel-heading">
+                    <h2>Current block</h2>
+                    {% if activeBlock %}
+                        <span class="status status-live">Running</span>
+                    {% else %}
+                        <span class="status">Idle</span>
+                    {% endif %}
+                </div>
+
                 {% if activeBlock %}
-                    <span class="status status-live">Running</span>
-                {% else %}
-                    <span class="status">Idle</span>
-                {% endif %}
-            </div>
-
-            {% if activeBlock %}
-                <div class="active-block">
-                    <div class="summary-grid">
-                        <div>
-                            <span class="label">Ticket</span>
-                            <strong>{{ activeBlock.ticket }}</strong>
-                        </div>
-                        <div>
-                            <span class="label">Job no</span>
-                            <strong>{{ activeBlock.jobNumber }}</strong>
-                        </div>
-                        <div class="summary-wide">
-                            <span class="label">Description</span>
-                            <strong>{{ activeBlock.description }}</strong>
-                        </div>
-                        <div>
-                            <span class="label">Rounded start</span>
-                            <strong>{{ activeBlock.startTime|date('d M Y H:i') }}</strong>
-                        </div>
-                    </div>
-
-                    <form method="post" action="{{ path('app_tracker_stop', {id: activeBlock.id}) }}">
-                        <input type="hidden" name="_token" value="{{ csrf_token('stop-block-' ~ activeBlock.id) }}">
-                        <button class="button button-stop" type="submit">Stop block</button>
-                    </form>
-                </div>
-            {% else %}
-                <form method="post" action="{{ path('app_tracker_start') }}" class="tracker-form">
-                    <input type="hidden" name="_token" value="{{ csrf_token('start-block') }}">
-
-                    <div class="field-wide ticket-loader">
-                        <div class="ticket-picker-header">
-                            <label class="ticket-picker-label">
-                                Available tickets
-                                <select data-ticket-select>
-                                    <option value="">Choose a ticket</option>
-                                    {% for savedTicket in savedTickets %}
-                                        <option
-                                            value="{{ savedTicket.id }}"
-                                            data-ticket="{{ savedTicket.ticket }}"
-                                            data-job-number="{{ savedTicket.jobNumber }}"
-                                            data-description="{{ savedTicket.description }}"
-                                        >
-                                            {{ savedTicket.ticket }} | {{ savedTicket.jobNumber }}{% if savedTicket.description %} | {{ savedTicket.description }}{% endif %}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </label>
-
-                            <button class="button button-ghost ticket-modal-trigger" type="button" data-load-tickets>Open loader</button>
-                        </div>
-
-                        <span class="hint" data-ticket-status>
-                            {% if savedTickets is empty %}
-                                No saved tickets yet. Import a page source to build the list.
-                            {% endif %}
-                        </span>
-                    </div>
-
-                    <label>
-                        Ticket
-                        <input type="text" name="ticket" maxlength="64" required placeholder="INC-12345">
-                    </label>
-
-                    <label>
-                        Job no
-                        <input type="text" name="job_number" maxlength="64" required placeholder="JOB-001">
-                    </label>
-
-                    <label class="field-wide">
-                        Description
-                        <textarea name="description" rows="3" maxlength="255" required placeholder="What are you working on?"></textarea>
-                    </label>
-
-                    <button class="button button-start" type="submit">Start block</button>
-                </form>
-            {% endif %}
-        </section>
-
-        <section class="panel stack-gap">
-            <div class="panel-heading">
-                <h2>Today's blocks</h2>
-                <span class="hint">Manual changes are rounded to 15-minute increments.</span>
-            </div>
-
-            <p class="day-label">{{ todayLabel }}</p>
-
-            {% if todayBlocks is empty %}
-                <p class="empty-state">No time blocks logged for today yet. Start one above to begin tracking.</p>
-            {% else %}
-                <div class="block-list">
-                    {% for block in todayBlocks %}
-                        <article class="block-card" data-block-card>
-                            <button class="block-summary" type="button" data-expand-toggle aria-expanded="false">
-                                <span class="block-summary-main">
-                                    <span class="block-summary-title">{{ block.ticket }} <span>{{ block.jobNumber }}</span></span>
-                                    <span class="block-summary-description">{{ block.description }}</span>
-                                </span>
-
-                                <span class="block-summary-meta">
-                                    <span class="block-summary-time">
-                                        {{ block.startTime|date('H:i') }}{% if block.endTime %} - {{ block.endTime|date('H:i') }}{% endif %}
-                                    </span>
-                                    {% if block.endTime %}
-                                        <span class="duration-badge">{{ block.durationMinutes }} min</span>
-                                    {% else %}
-                                        <span class="duration-badge duration-live">Running</span>
-                                    {% endif %}
-                                    <span class="block-expand-icon" aria-hidden="true">
-                                        <i data-lucide="chevron-down"></i>
-                                    </span>
-                                </span>
-                            </button>
-
-                            <div class="block-details">
-                                <form method="post" action="{{ path('app_tracker_update', {id: block.id}) }}" class="edit-form" data-editable-block>
-                                    <input type="hidden" name="_token" value="{{ csrf_token('update-block-' ~ block.id) }}">
-
-                                    {% include 'components/copy_input.html.twig' with {
-                                        label: 'Ticket',
-                                        name: 'ticket',
-                                        maxlength: 64,
-                                        required: true,
-                                        value: block.ticket,
-                                        copy_label: 'Copy ticket',
-                                        readonly: true
-                                    } only %}
-
-                                    {% include 'components/copy_input.html.twig' with {
-                                        label: 'Job no',
-                                        name: 'job_number',
-                                        maxlength: 64,
-                                        required: true,
-                                        value: block.jobNumber,
-                                        copy_label: 'Copy job number',
-                                        readonly: true
-                                    } only %}
-
-                                    {% include 'components/copy_input.html.twig' with {
-                                        label: 'Description',
-                                        name: 'description',
-                                        maxlength: 255,
-                                        required: true,
-                                        value: block.description,
-                                        field_class: 'field-wide',
-                                        copy_label: 'Copy description',
-                                        readonly: true
-                                    } only %}
-
-                                    <label>
-                                        Start time
-                                        <input type="datetime-local" step="900" name="start_time" required value="{{ block.startTime|date('Y-m-d\\TH:i') }}" disabled data-readonly-field="disabled">
-                                    </label>
-
-                                    <label>
-                                        End time
-                                        <input type="datetime-local" step="900" name="end_time" value="{{ block.endTime ? block.endTime|date('Y-m-d\\TH:i') : '' }}" disabled data-readonly-field="disabled">
-                                    </label>
-
-                                    <div class="form-actions field-wide">
-                                        <button class="button button-ghost" type="button" data-edit-toggle>Edit block</button>
-                                        <button class="button button-secondary button-save" type="submit">Save changes</button>
-                                    </div>
-                                </form>
-
-                                <div class="block-actions">
-                                    {% if not activeBlock %}
-                                        <form method="post" action="{{ path('app_tracker_continue', {id: block.id}) }}">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('continue-block-' ~ block.id) }}">
-                                            <button class="button button-secondary button-small" type="submit">Continue</button>
-                                        </form>
-                                    {% endif %}
-
-                                    <form method="post" action="{{ path('app_tracker_delete', {id: block.id}) }}">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('delete-block-' ~ block.id) }}">
-                                        <button class="button button-danger-soft button-small" type="submit" onclick="return confirm('Delete this block?');">Delete</button>
-                                    </form>
-                                </div>
+                    <div class="active-block">
+                        <div class="summary-grid">
+                            <div>
+                                <span class="label">Ticket</span>
+                                <strong>{{ activeBlock.ticket }}</strong>
                             </div>
-                        </article>
-                    {% endfor %}
+                            <div>
+                                <span class="label">Job no</span>
+                                <strong>{{ activeBlock.jobNumber }}</strong>
+                            </div>
+                            <div class="summary-wide">
+                                <span class="label">Description</span>
+                                <strong>{{ activeBlock.description }}</strong>
+                            </div>
+                            <div>
+                                <span class="label">Rounded start</span>
+                                <strong>{{ activeBlock.startTime|date('d M Y H:i') }}</strong>
+                            </div>
+                        </div>
+
+                        <form method="post" action="{{ path('app_tracker_stop', {id: activeBlock.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('stop-block-' ~ activeBlock.id) }}">
+                            <button class="button button-stop" type="submit">Stop block</button>
+                        </form>
+                    </div>
+                {% else %}
+                    <form method="post" action="{{ path('app_tracker_start') }}" class="tracker-form">
+                        <input type="hidden" name="_token" value="{{ csrf_token('start-block') }}">
+
+                        <div class="field-wide ticket-loader">
+                            <div class="ticket-picker-header">
+                                <label class="ticket-picker-label">
+                                    Available tickets
+                                    <select data-ticket-select>
+                                        <option value="">Choose a ticket</option>
+                                        {% for savedTicket in savedTickets %}
+                                            <option
+                                                value="{{ savedTicket.id }}"
+                                                data-ticket="{{ savedTicket.ticket }}"
+                                                data-job-number="{{ savedTicket.jobNumber }}"
+                                                data-description="{{ savedTicket.description }}"
+                                            >
+                                                {{ savedTicket.ticket }} | {{ savedTicket.jobNumber }}{% if savedTicket.description %} | {{ savedTicket.description }}{% endif %}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </label>
+
+                                <button class="button button-ghost ticket-modal-trigger" type="button" data-load-tickets>Open loader</button>
+                            </div>
+
+                            <span class="hint" data-ticket-status>
+                                {% if savedTickets is empty %}
+                                    No saved tickets yet. Import a page source to build the list.
+                                {% else %}
+                                    Choose a saved ticket or import more from the loader.
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <label>
+                            Ticket
+                            <input type="text" name="ticket" maxlength="64" required placeholder="INC-12345">
+                        </label>
+
+                        <label>
+                            Job no
+                            <input type="text" name="job_number" maxlength="64" required placeholder="JOB-001">
+                        </label>
+
+                        <label class="field-wide">
+                            Description
+                            <textarea name="description" rows="3" maxlength="255" required placeholder="What are you working on?"></textarea>
+                        </label>
+
+                        <button class="button button-start" type="submit">Start block</button>
+                    </form>
+                {% endif %}
+            </section>
+
+            <section class="panel stack-gap">
+                <div class="panel-heading">
+                    <h2>Today's blocks</h2>
+                    <span class="hint">Manual changes are rounded to 15-minute increments.</span>
                 </div>
-            {% endif %}
-        </section>
+
+                <p class="day-label">{{ todayLabel }}</p>
+
+                {% include 'tracker/_block_list.html.twig' with {
+                    blocks: todayBlocks,
+                    activeBlock: activeBlock,
+                    empty_message: 'No time blocks logged for today yet. Start one above to begin tracking.'
+                } only %}
+            </section>
+        {% else %}
+            <section class="panel stack-gap">
+                <div class="panel-heading">
+                    <h2>History</h2>
+                    <span class="hint">Choose a previous day to view its entries.</span>
+                </div>
+
+                {% if historyDays is empty %}
+                    <p class="empty-state">No previous-day entries yet.</p>
+                {% else %}
+                    <div class="history-day-links">
+                        {% for day in historyDays %}
+                            <a class="history-day-link{% if selectedHistoryDay == day.date %} is-active{% endif %}" href="{{ day.url }}">{{ day.label }}</a>
+                        {% endfor %}
+                    </div>
+
+                    {% if selectedHistoryLabel %}
+                        <section class="history-selected stack-gap">
+                            <div class="history-group-header">
+                                <h3>{{ selectedHistoryLabel }}</h3>
+                            </div>
+
+                            {% include 'tracker/_block_list.html.twig' with {
+                                blocks: historyBlocks,
+                                activeBlock: activeBlock,
+                                allow_continue: false,
+                                empty_message: 'No entries for this day.'
+                            } only %}
+                        </section>
+                    {% else %}
+                        <p class="empty-state">Select a day above to open its entries.</p>
+                    {% endif %}
+                {% endif %}
+            </section>
+        {% endif %}
     </main>
 
     <div class="modal-backdrop" hidden data-ticket-modal>

@@ -65,4 +65,19 @@ class TimeBlockRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return list<TimeBlock>
+     */
+    public function findBlocksBeforeDay(\DateTimeImmutable $day): array
+    {
+        $dayStart = $day->setTime(0, 0);
+
+        return $this->createQueryBuilder('tb')
+            ->andWhere('tb.startTime < :dayStart')
+            ->setParameter('dayStart', $dayStart)
+            ->orderBy('tb.startTime', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

@@ -20,14 +20,49 @@ final class TimeTrackerController extends AbstractController
     #[Route('/', name: 'app_tracker_dashboard', methods: ['GET'])]
     public function index(TimeBlockRepository $timeBlockRepository, SavedTicketRepository $savedTicketRepository): Response
     {
-        $today = new \DateTimeImmutable('today');
+        return $this->renderTodayPage($timeBlockRepository, $savedTicketRepository);
+    }
 
-        return $this->render('tracker/index.html.twig', [
-            'activeBlock' => $timeBlockRepository->findActiveBlock(),
-            'savedTickets' => $savedTicketRepository->findAllForPicker(),
-            'todayBlocks' => $timeBlockRepository->findBlocksForDay($today),
-            'todayLabel' => $today->format('D j M Y'),
-        ]);
+    #[Route('/history', name: 'app_tracker_history', methods: ['GET'])]
+    public function history(TimeBlockRepository $timeBlockRepository, SavedTicketRepository $savedTicketRepository): Response
+    {
+        $today = new \DateTimeImmutable('today');
+        $historyDays = $this->buildHistoryDays($timeBlockRepository, $today);
+
+        return $this->renderHistoryPage(
+            $timeBlockRepository,
+            $savedTicketRepository,
+            $today,
+            $historyDays,
+            null,
+            []
+        );
+    }
+
+    #[Route('/history/{date}', name: 'app_tracker_history_day', methods: ['GET'], requirements: ['date' => '\d{4}-\d{2}-\d{2}'])]
+    public function historyDay(string $date, TimeBlockRepository $timeBlockRepository, SavedTicketRepository $savedTicketRepository): Response
+    {
+        $today = new \DateTimeImmutable('today');
+        $selectedDay = \DateTimeImmutable::createFromFormat('Y-m-d', $date);
+
+        if (!$selectedDay instanceof \DateTimeImmutable) {
+            throw $this->createNotFoundException('The requested history date could not be read.');
+        }
+
+        $historyDays = $this->buildHistoryDays($timeBlockRepository, $today);
+
+        if (!isset($historyDays[$selectedDay->format('Y-m-d')])) {
+            throw $this->createNotFoundException('No entries were found for that day.');
+        }
+
+        return $this->renderHistoryPage(
+            $timeBlockRepository,
+            $savedTicketRepository,
+            $today,
+            $historyDays,
+            $selectedDay,
+            $timeBlockRepository->findBlocksForDay($selectedDay)
+        );
     }
 
     #[Route('/tickets/import', name: 'app_tracker_import_tickets', methods: ['POST'])]
@@ -271,6 +306,67 @@ final class TimeTrackerController extends AbstractController
         }
 
         return $startTime;
+    }
+
+    private function renderTodayPage(TimeBlockRepository $timeBlockRepository, SavedTicketRepository $savedTicketRepository): Response
+    {
+        $today = new \DateTimeImmutable('today');
+
+        return $this->render('tracker/index.html.twig', [
+            'activeBlock' => $timeBlockRepository->findActiveBlock(),
+            'activeTab' => 'today',
+            'historyGroups' => [],
+            'savedTickets' => $savedTicketRepository->findAllForPicker(),
+            'todayBlocks' => $timeBlockRepository->findBlocksForDay($today),
+            'todayLabel' => $today->format('D j M Y'),
+        ]);
+    }
+
+    /**
+     * @return array<string, array{date: string, label: string, url: string}>
+     */
+    private function buildHistoryDays(TimeBlockRepository $timeBlockRepository, \DateTimeImmutable $today): array
+    {
+        $historyDays = [];
+
+        foreach ($timeBlockRepository->findBlocksBeforeDay($today) as $block) {
+            $key = $block->getStartTime()->format('Y-m-d');
+
+            if (!isset($historyDays[$key])) {
+                $historyDays[$key] = [
+                    'date' => $key,
+                    'label' => $block->getStartTime()->format('D j M Y'),
+                    'url' => $this->generateUrl('app_tracker_history_day', ['date' => $key]),
+                ];
+            }
+        }
+
+        return $historyDays;
+    }
+
+    /**
+     * @param array<string, array{date: string, label: string, url: string}> $historyDays
+     * @param list<TimeBlock> $historyBlocks
+     */
+    private function renderHistoryPage(
+        TimeBlockRepository $timeBlockRepository,
+        SavedTicketRepository $savedTicketRepository,
+        \DateTimeImmutable $today,
+        array $historyDays,
+        ?\DateTimeImmutable $selectedDay,
+        array $historyBlocks,
+    ): Response {
+        return $this->render('tracker/index.html.twig', [
+            'activeBlock' => $timeBlockRepository->findActiveBlock(),
+            'activeTab' => 'history',
+            'historyBlocks' => $historyBlocks,
+            'historyDays' => array_values($historyDays),
+            'selectedHistoryDay' => $selectedDay?->format('Y-m-d'),
+            'selectedHistoryLabel' => $selectedDay?->format('D j M Y'),
+            'savedTickets' => $savedTicketRepository->findAllForPicker(),
+            'todayBlocks' => [],
+            'todayLabel' => $today->format('D j M Y'),
+        ]);
     }
 
     private function validateCsrf(string $id, string $token): void
