@@ -89,7 +89,7 @@ final class TimeTrackerController extends AbstractController
             return $this->redirectToRoute('app_tracker_dashboard');
         }
 
-        $stoppedAt = $quarterHourRounder->ceil(new \DateTimeImmutable());
+        $stoppedAt = $quarterHourRounder->normalizeForManualEntry(new \DateTimeImmutable());
         if ($stoppedAt < $timeBlock->getStartTime()) {
             $stoppedAt = $timeBlock->getStartTime();
         }
