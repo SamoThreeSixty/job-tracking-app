@@ -94,68 +94,79 @@
             {% else %}
                 <div class="block-list">
                     {% for block in todayBlocks %}
-                        <article class="block-card">
-                            <div class="card-topline">
-                                <div>
-                                    <h3>{{ block.ticket }} <span>{{ block.jobNumber }}</span></h3>
-                                    <p>{{ block.description }}</p>
-                                </div>
-                                {% if block.endTime %}
-                                    <div class="duration-badge">{{ block.durationMinutes }} min</div>
-                                {% else %}
-                                    <div class="duration-badge duration-live">Running</div>
-                                {% endif %}
+                        <article class="block-card" data-block-card>
+                            <button class="block-summary" type="button" data-expand-toggle aria-expanded="false">
+                                <span class="block-summary-main">
+                                    <span class="block-summary-title">{{ block.ticket }} <span>{{ block.jobNumber }}</span></span>
+                                    <span class="block-summary-description">{{ block.description }}</span>
+                                </span>
+
+                                <span class="block-summary-meta">
+                                    <span class="block-summary-time">
+                                        {{ block.startTime|date('H:i') }}{% if block.endTime %} - {{ block.endTime|date('H:i') }}{% endif %}
+                                    </span>
+                                    {% if block.endTime %}
+                                        <span class="duration-badge">{{ block.durationMinutes }} min</span>
+                                    {% else %}
+                                        <span class="duration-badge duration-live">Running</span>
+                                    {% endif %}
+                                    <span class="block-expand-icon" aria-hidden="true">
+                                        <i data-lucide="chevron-down"></i>
+                                    </span>
+                                </span>
+                            </button>
+
+                            <div class="block-details">
+                                <form method="post" action="{{ path('app_tracker_update', {id: block.id}) }}" class="edit-form" data-editable-block>
+                                    <input type="hidden" name="_token" value="{{ csrf_token('update-block-' ~ block.id) }}">
+
+                                    {% include 'components/copy_input.html.twig' with {
+                                        label: 'Ticket',
+                                        name: 'ticket',
+                                        maxlength: 64,
+                                        required: true,
+                                        value: block.ticket,
+                                        copy_label: 'Copy ticket',
+                                        readonly: true
+                                    } only %}
+
+                                    {% include 'components/copy_input.html.twig' with {
+                                        label: 'Job no',
+                                        name: 'job_number',
+                                        maxlength: 64,
+                                        required: true,
+                                        value: block.jobNumber,
+                                        copy_label: 'Copy job number',
+                                        readonly: true
+                                    } only %}
+
+                                    {% include 'components/copy_input.html.twig' with {
+                                        label: 'Description',
+                                        name: 'description',
+                                        maxlength: 255,
+                                        required: true,
+                                        value: block.description,
+                                        field_class: 'field-wide',
+                                        copy_label: 'Copy description',
+                                        readonly: true
+                                    } only %}
+
+                                    <label>
+                                        Start time
+                                        <input type="datetime-local" step="900" name="start_time" required value="{{ block.startTime|date('Y-m-d\\TH:i') }}" disabled data-readonly-field="disabled">
+                                    </label>
+
+                                    <label>
+                                        End time
+                                        <input type="datetime-local" step="900" name="end_time" value="{{ block.endTime ? block.endTime|date('Y-m-d\\TH:i') : '' }}" disabled data-readonly-field="disabled">
+                                    </label>
+
+                                    <div class="form-actions field-wide">
+                                        <button class="button button-ghost" type="button" data-edit-toggle>Edit block</button>
+                                        <button class="button button-secondary button-save" type="submit">Save changes</button>
+                                    </div>
+                                </form>
                             </div>
-
-                            <form method="post" action="{{ path('app_tracker_update', {id: block.id}) }}" class="edit-form" data-editable-block>
-                                <input type="hidden" name="_token" value="{{ csrf_token('update-block-' ~ block.id) }}">
-
-                                {% include 'components/copy_input.html.twig' with {
-                                    label: 'Ticket',
-                                    name: 'ticket',
-                                    maxlength: 64,
-                                    required: true,
-                                    value: block.ticket,
-                                    copy_label: 'Copy ticket',
-                                    readonly: true
-                                } only %}
-
-                                {% include 'components/copy_input.html.twig' with {
-                                    label: 'Job no',
-                                    name: 'job_number',
-                                    maxlength: 64,
-                                    required: true,
-                                    value: block.jobNumber,
-                                    copy_label: 'Copy job number',
-                                    readonly: true
-                                } only %}
-
-                                {% include 'components/copy_input.html.twig' with {
-                                    label: 'Description',
-                                    name: 'description',
-                                    maxlength: 255,
-                                    required: true,
-                                    value: block.description,
-                                    field_class: 'field-wide',
-                                    copy_label: 'Copy description',
-                                    readonly: true
-                                } only %}
-
-                                <label>
-                                    Start time
-                                    <input type="datetime-local" step="900" name="start_time" required value="{{ block.startTime|date('Y-m-d\\TH:i') }}" disabled data-readonly-field="disabled">
-                                </label>
-
-                                <label>
-                                    End time
-                                    <input type="datetime-local" step="900" name="end_time" value="{{ block.endTime ? block.endTime|date('Y-m-d\\TH:i') : '' }}" disabled data-readonly-field="disabled">
-                                </label>
-
-                                <div class="form-actions field-wide">
-                                    <button class="button button-ghost" type="button" data-edit-toggle>Edit block</button>
-                                    <button class="button button-secondary button-save" type="submit">Save changes</button>
-                                </div>
-                            </form>
                         </article>
                     {% endfor %}
                 </div>

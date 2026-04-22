@@ -7,6 +7,7 @@ createIcons({ icons });
 
 const copyButtons = document.querySelectorAll('[data-copy-field]');
 const editableBlocks = document.querySelectorAll('[data-editable-block]');
+const expandableBlocks = document.querySelectorAll('[data-block-card]');
 
 const formatDateTime = (value) => {
     if (!value) {
@@ -66,5 +67,19 @@ editableBlocks.forEach((form) => {
         const firstField = form.querySelector('input[name="ticket"]');
         firstField?.focus();
         firstField?.select();
+    });
+});
+
+expandableBlocks.forEach((blockCard) => {
+    const toggle = blockCard.querySelector('[data-expand-toggle]');
+
+    if (!toggle) {
+        return;
+    }
+
+    toggle.addEventListener('click', () => {
+        const isExpanded = blockCard.dataset.expanded === 'true';
+        blockCard.dataset.expanded = isExpanded ? 'false' : 'true';
+        toggle.setAttribute('aria-expanded', isExpanded ? 'false' : 'true');
     });
 });

@@ -255,34 +255,94 @@ textarea {
 }
 
 .block-card {
-    padding: 1rem;
     border: 1px solid var(--line);
     border-radius: 16px;
     background: #fafcfe;
+    overflow: hidden;
 }
 
-.card-topline {
+.block-summary {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    margin-bottom: 1rem;
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
 }
 
-.card-topline h3 {
-    margin: 0;
-    font-size: 1.08rem;
+.block-summary:hover {
+    background: #f1f6fa;
 }
 
-.card-topline h3 span {
+.block-summary-main {
+    display: grid;
+    gap: 0.2rem;
+    min-width: 0;
+}
+
+.block-summary-title {
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.block-summary-title span {
     color: var(--muted);
     font-weight: 600;
 }
 
-.card-topline p {
-    margin: 0.35rem 0 0;
+.block-summary-description {
     color: var(--muted);
-    line-height: 1.5;
+    font-size: 0.92rem;
+    line-height: 1.35;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.block-summary-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+.block-summary-time {
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.block-expand-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    transition: transform 180ms ease;
+}
+
+.block-expand-icon svg {
+    width: 1rem;
+    height: 1rem;
+    stroke-width: 2.2;
+}
+
+.block-details {
+    display: none;
+    padding: 1rem;
+    border-top: 1px solid var(--line);
+}
+
+[data-block-card][data-expanded='true'] .block-details {
+    display: block;
+}
+
+[data-block-card][data-expanded='true'] .block-expand-icon {
+    transform: rotate(180deg);
 }
 
 .empty-state {
@@ -433,6 +493,15 @@ textarea {
 
     .card-topline {
         display: grid;
+    }
+
+    .block-summary {
+        display: grid;
+    }
+
+    .block-summary-meta {
+        justify-content: flex-start;
+        flex-wrap: wrap;
     }
 
     .form-actions {
