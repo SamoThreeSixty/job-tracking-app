@@ -7,7 +7,7 @@ services:
       APP_ENV: dev
       APP_DEBUG: 1
       APP_TIMEZONE: Europe/London
-      DATABASE_URL: sqlite:////app/var/data/app.db
+      DATABASE_URL: sqlite:////srv/job-tracker-data/app.db
       COMPOSER_CACHE_DIR: /tmp/composer-cache
       SERVER_NAME: :8000
     ports:
@@ -18,10 +18,11 @@ services:
       - composer_cache:/tmp/composer-cache
       - caddy_data:/data
       - caddy_config:/config
-      - sqlite_data:/app/var/data
+      - sqlite_data:/srv/job-tracker-data
 
 volumes:
   caddy_config:
   caddy_data:
   composer_cache:
   sqlite_data:
+    name: job_tracker_sqlite_data

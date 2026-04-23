@@ -36,7 +36,8 @@ docker compose up --build app
 ```
 
 The app is served on [http://localhost:8000](http://localhost:8000).
-SQLite data is stored at `var/data/app.db`.
+For Docker, SQLite data is stored in the dedicated named volume `job_tracker_sqlite_data` at `/srv/job-tracker-data/app.db` inside the container.
+For non-Docker local runs, the app still uses `var/data/app.db`.
 
 ## Linux services
 
